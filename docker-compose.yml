@@ -15,7 +15,7 @@ services:
   goapp:
     restart: always
     build:
-      context: ./goapp
+      context: ./goapp  
       dockerfile: ./Dockerfile
     ports:
       - "5555:5555"
@@ -29,6 +29,8 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - "27017:27017"
   traefik:
     image: traefik
     command:
