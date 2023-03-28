@@ -16,8 +16,9 @@ def hello():
 @app.route("/staj")
 def get_random_il():
     # MongoDB'den rastgele bir il verisi çekme
-    il = iller.aggregate([{ '$sample': { 'size': 1 } }]).next()
-    return jsonify(il)
+    # il = iller.aggregate([{ '$sample': { 'size': 1 } }]).next()
+    # return jsonify(il)
+    return "Staj"
 
 if __name__ == '__main__':
     #from waitress import serve

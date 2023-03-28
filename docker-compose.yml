@@ -10,6 +10,15 @@ services:
     build:
       context: ./pythonapp
       dockerfile: ./Dockerfile
+    ports:
+      - "4444:4444"
+  goapp:
+    restart: always
+    build:
+      context: ./goapp
+      dockerfile: ./Dockerfile
+    ports:
+      - "5555:5555"
   servis_gelistirme:
     build: 
       context: ./servis_gelistirme
@@ -20,7 +29,29 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
-
+  traefik:
+    image: traefik
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.address=:8081"
+      # - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.email=<your-email>"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--providers.file.filename=/etc/traefik/rules.yml"
+    ports:
+      - "80:80"
+      - "8081:8081"
+      # - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./letsencrypt:/letsencrypt"
+      - "./traefik/rules.yml:/etc/traefik/rules.yml"
+      - "./traefik/dashboard:/traefik"
 networks:
   kartaca:
     driver: bridge
