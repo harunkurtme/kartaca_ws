@@ -1,10 +1,16 @@
 http:
   routers:
     pythonapp:
+      entryPoints:
+        - web
       rule: "Host(`kartaca.localhost`) && PathPrefix(`/pythonapp`)"
+      # rule: "PathPrefix(`/pythonapp`)"
       service: pythonapp
     goapp:
+      entryPoints:
+        - web
       rule: "Host(`kartaca.localhost`) && PathPrefix(`/goapp`)"
+      # rule: "PathPrefix(`/goapp`)"
       service: goapp
     # grafana:
     #   rule: "Host(`kartaca.localhost`) && PathPrefix(`/grafana`)"
