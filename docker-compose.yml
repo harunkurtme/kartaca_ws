@@ -1,0 +1,23 @@
+version: '3.4'
+
+services:
+  kartaca_ws:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+  flask_app:
+    restart: always
+    build:
+      context: ./flask_app
+      dockerfile: ./Dockerfile
+  servis_gelistirme:
+    build: 
+      context: ./servis_gelistirme
+      dockerfile: ./Dockerfile
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+
