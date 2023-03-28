@@ -11,7 +11,7 @@ ulkeler = db['ulkeler']
 
 @app.route("/")
 def hello():
-    return "Merhaba Python"
+    return "Merhaba Python!"
 
 @app.route("/staj")
 def get_random_il():
@@ -19,6 +19,13 @@ def get_random_il():
     # il = iller.aggregate([{ '$sample': { 'size': 1 } }]).next()
     # return jsonify(il)
     return "Staj"
+
+@app.route("/pythonapp")
+def get_random_il_pythonapp():
+    # MongoDB'den rastgele bir il verisi çekme
+    # il = iller.aggregate([{ '$sample': { 'size': 1 } }]).next()
+    # return jsonify(il)
+    return "Staj pythonapp"
 
 if __name__ == '__main__':
     #from waitress import serve

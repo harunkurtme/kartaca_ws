@@ -8,9 +8,12 @@ services:
   pythonapp:
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.pythonapp.entrypoints=web"
       - "traefik.http.routers.pythonapp.rule=Host(`kartaca.localhost`) && Path(`/pythonapp`)"
       - "traefik.http.services.pythonapp.loadbalancer.server.port=4444"
     restart: always
+    networks:
+      - kartaca-net
     build:
       context: ./pythonapp
       dockerfile: ./Dockerfile
@@ -20,8 +23,11 @@ services:
       - mongo
   goapp:
     restart: always
+    networks:
+      - kartaca-net
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.goapp.entrypoints=web"
       - "traefik.http.routers.goapp.rule=Host(`kartaca.localhost`) && Path(`/goapp`)"
       - "traefik.http.services.goapp.loadbalancer.server.port=5555"
     build:
@@ -38,6 +44,8 @@ services:
   mongo:
     image: mongo
     restart: always
+    networks:
+      - kartaca-net
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
@@ -45,13 +53,14 @@ services:
       - "27017:27017"
   traefik:
     image: traefik
+    networks:
+      - kartaca-net
     command:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.address=:8081"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.myresolver.acme.email=harunkurt0000@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
@@ -59,7 +68,6 @@ services:
       - "--providers.file.filename=/etc/traefik/rules.yml"
     ports:
       - "80:80"
-      - "8081:8081"
       - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
@@ -67,5 +75,5 @@ services:
       - "./traefik/rules.yml:/etc/traefik/rules.yml"
       - "./traefik/dashboard:/traefik"
 networks:
-  kartaca:
+  kartaca-net:
     driver: bridge

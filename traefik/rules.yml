@@ -1,14 +1,14 @@
 http:
   routers:
     pythonapp:
-      entryPoints:
-        - web
+      # entryPoints:
+      #   - web
       rule: "Host(`kartaca.localhost`) && PathPrefix(`/pythonapp`)"
       # rule: "PathPrefix(`/pythonapp`)"
       service: pythonapp
     goapp:
-      entryPoints:
-        - web
+      # entryPoints:
+      #   - web
       rule: "Host(`kartaca.localhost`) && PathPrefix(`/goapp`)"
       # rule: "PathPrefix(`/goapp`)"
       service: goapp
@@ -19,11 +19,11 @@ http:
     pythonapp:
       loadBalancer:
         servers:
-          - url: "http://pythonapp:4444"
+          - url: "http://pythonapp:4444/staj"
     goapp:
       loadBalancer:
         servers:
-          - url: "http://goapp:5555"
+          - url: "http://goapp:5555/staj"
     # grafana:
     #   image: grafana/grafana
     #   container_name: grafana

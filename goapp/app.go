@@ -64,6 +64,28 @@ func main() {
 		w.Write([]byte("Staj"))
 	})
 
+
+	http.HandleFunc("/goapp", func(w http.ResponseWriter, r *http.Request) {
+		// Get a random country from MongoDB collection
+		// var result Country
+		// count, err := collection.CountDocuments(context.Background(), bson.M{})
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// err = collection.FindOne(context.Background(), bson.M{}).Skip(rand.Intn(int(count))).Decode(&result)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// // Write country data as JSON response
+		// jsonData, err := json.Marshal(result)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// w.Header().Set("Content-Type", "application/json")
+		// w.Write("jsonData")
+		w.Write([]byte("Staj Goapp"))
+	})
+
 	// Start HTTP server on port 5555
 	log.Fatal(http.ListenAndServe(":5555", nil))
 }
