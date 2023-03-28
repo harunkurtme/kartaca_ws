@@ -1,5 +1,5 @@
 FROM python:3.8-slim-buster
-LABEL Name=flask_app Version=0.0.1
+LABEL Name=pythonapp Version=0.0.1
 
 RUN pip install flask
 RUN pip install pymongo

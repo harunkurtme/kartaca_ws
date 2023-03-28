@@ -8,7 +8,7 @@ services:
   pythonapp:
     restart: always
     build:
-      context: ./flask_app
+      context: ./pythonapp
       dockerfile: ./Dockerfile
   servis_gelistirme:
     build: 
@@ -21,28 +21,6 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
 
-
-http:
-  routers:
-    pythonapp:
-      rule: "Host(`kartaca.localhost`) && PathPrefix(`/pythonapp`)"
-      service: "pythonapp"
-    goapp:
-      rule: "Host(`kartaca.localhost`) && PathPrefix(`/goapp`)"
-      service: "goapp"
-    grafana:
-      rule: "Host(`kartaca.localhost`) && PathPrefix(`/grafana`)"
-      service: "grafana"
-  services:
-    pythonapp:
-      loadBalancer:
-        servers:
-          - url: "http://pythonapp:5000/staj"
-    goapp:
-      loadBalancer:
-        servers:
-          - url: "http://goapp:8080/staj"
-    grafana:
-      loadBalancer:
-        servers:
-          - url: "http://grafana:3000"
+networks:
+  kartaca:
+    driver: bridge
