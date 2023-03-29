@@ -6,11 +6,11 @@ services:
       context: .
       dockerfile: ./Dockerfile
   pythonapp:
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pythonapp.entrypoints=web"
-      - "traefik.http.routers.pythonapp.rule=Host(`kartaca.localhost`) && Path(`/pythonapp`)"
-      - "traefik.http.services.pythonapp.loadbalancer.server.port=4444"
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.pythonapp.entrypoints=web"
+    #   - "traefik.http.routers.pythonapp.rule=Host(`kartaca.localhost`) && Path(`/pythonapp`)"
+    #   - "traefik.http.services.pythonapp.loadbalancer.server.port=4444"
     restart: always
     networks:
       - kartaca-net
@@ -25,11 +25,11 @@ services:
     restart: always
     networks:
       - kartaca-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.goapp.entrypoints=web"
-      - "traefik.http.routers.goapp.rule=Host(`kartaca.localhost`) && Path(`/goapp`)"
-      - "traefik.http.services.goapp.loadbalancer.server.port=5555"
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.goapp.entrypoints=web"
+    #   - "traefik.http.routers.goapp.rule=Host(`kartaca.localhost`) && Path(`/goapp`)"
+    #   - "traefik.http.services.goapp.loadbalancer.server.port=5555"
     build:
       context: ./goapp  
       dockerfile: ./Dockerfile
