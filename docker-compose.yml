@@ -13,18 +13,20 @@ services:
     #   - "traefik.http.services.pythonapp.loadbalancer.server.port=4444"
     restart: always
     networks:
-      - kartaca-net
+      - kartaca_net
     build:
       context: ./pythonapp
       dockerfile: ./Dockerfile
     ports:
       - "4444:4444"
     depends_on:
-      - mongo
+      - mongo1
+      - mongo2
+      - mongo3
   goapp:
     restart: always
     networks:
-      - kartaca-net
+      - kartaca_net
     # labels:
     #   - "traefik.enable=true"
     #   - "traefik.http.routers.goapp.entrypoints=web"
@@ -36,25 +38,28 @@ services:
     ports:
       - "5555:5555"
     depends_on:
-      - mongo
+      # - mongo
+      - mongo1
+      - mongo2
+      - mongo3
   servis_gelistirme:
     build: 
       context: ./servis_gelistirme
       dockerfile: ./Dockerfile
-  mongo:
-    image: mongo
-    restart: always
-    networks:
-      - kartaca-net
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-    ports:
-      - "27017:27017"
+  # mongo:
+  #   image: mongo
+  #   restart: always
+  #   networks:
+  #     - kartaca_net
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin
+  #     MONGO_INITDB_ROOT_PASSWORD: admin
+  #   ports:
+  #     - "27017:27017"
   traefik:
     image: traefik
     networks:
-      - kartaca-net
+      - kartaca_net
     command:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
@@ -74,6 +79,54 @@ services:
       - "./letsencrypt:/letsencrypt"
       - "./traefik/rules.yml:/etc/traefik/rules.yml"
       - "./traefik/dashboard:/traefik"
+  mongo1:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo1_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: stajdb
+    networks:
+      - kartaca_net
+    command: mongod --replSet rs0 --bind_ip_all
+  mongo2:
+    image: mongo
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo2_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: stajdb
+    networks:
+      - kartaca_net
+    command: mongod --replSet rs0 --bind_ip_all
+  mongo3:
+    image: mongo
+    restart: always
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo3_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: stajdb
+    networks:
+      - kartaca_net
+    command: mongod --replSet rs0 --bind_ip_all
+
+volumes:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+
 networks:
-  kartaca-net:
+  kartaca_net:
     driver: bridge
