@@ -19,10 +19,10 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "4444:4444"
-    depends_on:
-      - mongo1
-      - mongo2
-      - mongo3
+    # depends_on:
+    #   - mongo1
+    #   - mongo2
+    #   - mongo3
   goapp:
     restart: always
     networks:
@@ -37,16 +37,16 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "5555:5555"
-    depends_on:
-      # - mongo
-      - mongo1
-      - mongo2
-      - mongo3
+    # depends_on:
+    #   - mongo
+    #   - mongo1
+    #   - mongo2
+    #   - mongo3
   servis_gelistirme:
     build: 
       context: ./servis_gelistirme
       dockerfile: ./Dockerfile
-  # mongo:
+  # mongo-primary:
   #   image: mongo
   #   restart: always
   #   networks:
@@ -56,6 +56,9 @@ services:
   #     MONGO_INITDB_ROOT_PASSWORD: admin
   #   ports:
   #     - "27017:27017"
+  #   volumes:
+  #     - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:root
+    
   traefik:
     image: traefik
     networks:
@@ -79,6 +82,12 @@ services:
       - "./letsencrypt:/letsencrypt"
       - "./traefik/rules.yml:/etc/traefik/rules.yml"
       - "./traefik/dashboard:/traefik"
+  mongo-keys:
+    image: depop/openssl-bats
+    volumes:
+      - mongo_keys:/mongo-conf
+    command: 'bash -c "openssl rand -base64 741 > /mongo-conf/mongodb-keyfile; chmod 600 /mongo-conf/mongodb-keyfile; chown 999 /mongo-conf/mongodb-keyfile"'
+  
   mongo1:
     image: mongo
     restart: always
@@ -86,13 +95,18 @@ services:
       - "27017:27017"
     volumes:
       - mongo1_data:/data/db
+      # - ./mongodb-keyfile:/opt/mongo-keyfile/mongodb-keyfile:ro
+      - mongo_keys:/opt/keyfile
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: stajdb
     networks:
       - kartaca_net
-    command: mongod --replSet rs0 --bind_ip_all
+      - mongo-file-replica-set
+    depends_on:
+      - mongo-keys
+    command: 'mongosh --smallfiles --auth --keyFile /opt/keyfile/mongodb-keyfile --replSet mongo-file-replica-set'
   mongo2:
     image: mongo
     restart: always
@@ -100,13 +114,18 @@ services:
       - "27018:27017"
     volumes:
       - mongo2_data:/data/db
+      - mongo_keys:/opt/keyfile
+    command: 'mongosh --smallfiles --auth --keyFile /opt/keyfile/mongodb-keyfile --replSet mongo-file-replica-set'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: stajdb
     networks:
       - kartaca_net
-    command: mongod --replSet rs0 --bind_ip_all
+      - mongo-file-replica-set
+    depends_on:
+      - mongo-keys
+
   mongo3:
     image: mongo
     restart: always
@@ -114,19 +133,31 @@ services:
       - "27019:27017"
     volumes:
       - mongo3_data:/data/db
+      - mongo_keys:/opt/keyfile
+    command: 'mongosh --smallfiles --auth --keyFile /opt/keyfile/mongodb-keyfile --replSet mongo-file-replica-set'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: stajdb
     networks:
       - kartaca_net
-    command: mongod --replSet rs0 --bind_ip_all
+      - mongo-file-replica-set
+    depends_on:
+      - mongo-keys
 
 volumes:
+  mongo_keys:
   mongo1_data:
   mongo2_data:
   mongo3_data:
 
+
 networks:
   kartaca_net:
     driver: bridge
+  mongo-file-replica-set:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.10.5.0/24
