@@ -1,0 +1,13 @@
+show collections
+use stajdb
+cd stajdb
+show collections
+show collection
+db list
+exit
+use
+ls
+use iller
+sh.status()
+db.status()
+sh.status()

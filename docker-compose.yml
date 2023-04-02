@@ -9,28 +9,30 @@ services:
     restart: always
     networks:
       - kartaca_net
+      - mongo-network
     build:
       context: ./pythonapp
       dockerfile: ./Dockerfile
     ports:
       - "4444:4444"
-    # depends_on:
-    #   - mongo1
-    #   - mongo2
-    #   - mongo3
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
   goapp:
     restart: always
     networks:
       - kartaca_net
+      - mongo-network
     build:
       context: ./goapp  
       dockerfile: ./Dockerfile
     ports:
       - "5555:5555"
-    # depends_on:
-    #   - mongo1
-    #   - mongo2
-    #   - mongo3
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
   servis_gelistirme:
     build: 
       context: ./servis_gelistirme
@@ -58,50 +60,104 @@ services:
       - "./letsencrypt:/letsencrypt"
       - "./traefik/rules.yml:/etc/traefik/rules.yml"
       - "./traefik/dashboard:/traefik"
-  mongo1:
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.ignored-mount-points='^/(sys|proc|dev|host|etc)($|/)'"
+
+  cadvisor:
+    image: google/cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    depends_on:
+      - prometheus
+    links:
+      - prometheus
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+    mongo1:
     image: mongo
     container_name: mongo-master
-    restart: always
     ports:
-      - "27017:27017"
-    networks:
-      - mongo_network
+      - 27017:27017
     volumes:
-      - ./data/mongo1:/data/db
-      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    # command: mongod --replSet rs0 --port 27017 --bind_ip_all --auth --init-script /docker-entrypoint-initdb.d/mongo-init.js
+      # - ./mongo-init:/docker-entrypoint-initdb.d
+      - ./mongo-master-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=12345
+      - MONGO_REPLICA_SET_MODE=primary
+      - MONGO_REPLICA_SET_NAME=rs0
+      - MONGO_REPLICA_SET_MEMBERS=mongo-master:27017,mongo-slave1:27017,mongo-slave2:27017
+    networks:
+      - mongo-network
+
   mongo2:
     image: mongo
     container_name: mongo-slave1
-    restart: always
-    networks:
-      - mongo_network
-    ports:
-      - "27018:27017"
     volumes:
-      - ./data/mongo2:/data/db
-      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    # command: mongod --replSet rs0 --port 27017 --bind_ip_all --auth --init-script /docker-entrypoint-initdb.d/mongo-init.js
+      - ./mongo-slave1-data:/data/db
+    environment:
+      - MONGO_REPLICA_SET_MODE=secondary
+      - MONGO_REPLICA_SET_NAME=rs0
+      - MONGO_REPLICA_SET_MEMBERS=mongo-master:27017,mongo-slave1:27017,mongo-slave2:27017
+    networks:
+      - mongo-network
+
   mongo3:
     image: mongo
     container_name: mongo-slave2
-    restart: always
-    networks:
-      - mongo_network
-    ports:
-      - "27019:27017"
     volumes:
-      - ./data/mongo3:/data/db
-      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    # command: mongod --replSet rs0 --port 27017 --bind_ip_all --auth --init-script /docker-entrypoint-initdb.d/mongo-init.js
+      - ./mongo-slave2-data:/data/db
+    environment:
+      - MONGO_REPLICA_SET_MODE=secondary
+      - MONGO_REPLICA_SET_NAME=rs0
+      - MONGO_REPLICA_SET_MEMBERS=mongo-master:27017,mongo-slave1:27017,mongo-slave2:27017
+    networks:
+      - mongo-network
 
-
+volumes:
+  grafana-storage:
+      
 
 
 networks:
   kartaca_net:
     driver: bridge
-  mongo_network:
+  mongo-network:
     driver: bridge
   # mongo-file-replica-set:
   #   driver: bridge

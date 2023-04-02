@@ -1,30 +1,41 @@
-// Set the replica set name
-rs.initiate({_id: "rs0", version: 1});
 
-// Wait for the replica set to be fully initialized
-while (rs.status().startupStatus || (rs.status().hasOwnProperty("myState") && rs.status().myState != 1)) {
-  print("Waiting for the replica set to be fully initialized...");
-  sleep(1000);
-}
 
-// Create the stajdb database
-db = db.getSiblingDB('stajdb');
-
-// Enable authentication
+print("başlandı mongodb")
 db.createUser({
-  user: 'stajuser',
-  pwd: 'stajpassword',
-  roles: [{role: 'readWrite', db: 'stajdb'}]
+    user: "myuser",
+    pwd: "mypassword",
+    roles: [ { role: "readWrite", db: "stajdb" } ]
 });
 
-// Create the "iller" collection and insert 10 documents
-db.createCollection('iller');
-for (i = 1; i <= 10; i++) {
-  db.iller.insert({il_adi: 'İl ' + i});
-}
+db = db.getSiblingDB('stajdb');
 
-// Create the "ulkeler" collection and insert 10 documents
-db.createCollection('ulkeler');
-for (i = 1; i <= 10; i++) {
-  db.ulkeler.insert({ulke_adi: 'Ülke ' + i});
-}
+db.createCollection("iller");
+db.createCollection("ulkeler");
+
+db.iller.insertMany([
+    {il_adi: "Ankara"},
+    {il_adi: "İstanbul"},
+    {il_adi: "İzmir"},
+    {il_adi: "Antalya"},
+    {il_adi: "Adana"},
+    {il_adi: "Bursa"},
+    {il_adi: "Konya"},
+    {il_adi: "Gaziantep"},
+    {il_adi: "Kayseri"},
+    {il_adi: "Diyarbakır"}
+]);
+
+db.ulkeler.insertMany([
+    {ulke_adi: "Türkiye"},
+    {ulke_adi: "ABD"},
+    {ulke_adi: "Almanya"},
+    {ulke_adi: "Fransa"},
+    {ulke_adi: "İngiltere"},
+    {ulke_adi: "Rusya"},
+    {ulke_adi: "Japonya"},
+    {ulke_adi: "Çin"},
+    {ulke_adi: "İtalya"},
+    {ulke_adi: "Hollanda"}
+]);
+
+print("Sonlandı mongodb")
