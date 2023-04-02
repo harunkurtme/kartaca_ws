@@ -14,10 +14,10 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "4444:4444"
-    depends_on:
-      - mongo1
-      - mongo2
-      - mongo3
+    # depends_on:
+    #   - mongo1
+    #   - mongo2
+    #   - mongo3
   goapp:
     restart: always
     networks:
@@ -27,10 +27,10 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "5555:5555"
-    depends_on:
-      - mongo1
-      - mongo2
-      - mongo3
+    # depends_on:
+    #   - mongo1
+    #   - mongo2
+    #   - mongo3
   servis_gelistirme:
     build: 
       context: ./servis_gelistirme
@@ -62,45 +62,40 @@ services:
     image: mongo
     container_name: mongo-master
     restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_ROOT_DATABASE: root-db 
     ports:
       - "27017:27017"
     networks:
       - mongo_network
-    volumes: 
+    volumes:
+      - ./data/mongo1:/data/db
       - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    # command: mongod --replSet rs0 --port 27017 --bind_ip_all --auth --init-script /docker-entrypoint-initdb.d/mongo-init.js
   mongo2:
     image: mongo
     container_name: mongo-slave1
     restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_ROOT_DATABASE: root-db
-    ports:
-      - "27018:27017"
     networks:
       - mongo_network
-    volumes: 
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./data/mongo2:/data/db
       - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    # command: mongod --replSet rs0 --port 27017 --bind_ip_all --auth --init-script /docker-entrypoint-initdb.d/mongo-init.js
   mongo3:
     image: mongo
     container_name: mongo-slave2
     restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_ROOT_DATABASE: root-db
-    ports:
-      - "27019:27017"
     networks:
       - mongo_network
-    volumes: 
+    ports:
+      - "27019:27017"
+    volumes:
+      - ./data/mongo3:/data/db
       - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-  
+    # command: mongod --replSet rs0 --port 27017 --bind_ip_all --auth --init-script /docker-entrypoint-initdb.d/mongo-init.js
+
+
 
 
 networks:
