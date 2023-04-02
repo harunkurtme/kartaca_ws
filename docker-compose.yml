@@ -14,6 +14,10 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "4444:4444"
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
   goapp:
     restart: always
     networks:
@@ -23,8 +27,10 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "5555:5555"
-    # depends_on:
-    #   - mongo
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
   servis_gelistirme:
     build: 
       context: ./servis_gelistirme
@@ -59,10 +65,13 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_DATABASE: root-db 
     ports:
       - "27017:27017"
     networks:
       - mongo_network
+    volumes: 
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
   mongo2:
     image: mongo
     container_name: mongo-slave1
@@ -70,10 +79,13 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_DATABASE: root-db
     ports:
       - "27018:27017"
     networks:
       - mongo_network
+    volumes: 
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
   mongo3:
     image: mongo
     container_name: mongo-slave2
@@ -81,16 +93,14 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_DATABASE: root-db
     ports:
       - "27019:27017"
     networks:
       - mongo_network
-
-volumes:
-  mongo_keys:
-  mongo1_data:
-  mongo2_data:
-  mongo3_data:
+    volumes: 
+      - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  
 
 
 networks:
